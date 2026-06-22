@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+   throw new Error('MONGODB_URI is missing. Database features will not work.');
 }
 
 const uri = process.env.MONGODB_URI;

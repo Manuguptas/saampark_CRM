@@ -9,7 +9,7 @@ async function ensureDbFile() {
     await fs.access(DB_PATH);
   } catch {
     await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    const emptyDb: AppDb = { leads: [], dashboards: [] };
+    const emptyDb: AppDb = { leads: [], dashboards: [], projects: [], users: [] };
     await fs.writeFile(DB_PATH, JSON.stringify(emptyDb, null, 2), "utf8");
   }
 }
@@ -21,7 +21,7 @@ export async function readDb(): Promise<AppDb> {
     return JSON.parse(content) as AppDb;
   } catch (error) {
     console.error("Database file corrupted. Resetting to safe state...", error);
-    const emptyDb: AppDb = { leads: [], dashboards: [] };
+    const emptyDb: AppDb = { leads: [], dashboards: [], projects: [], users: [] };
     await fs.writeFile(DB_PATH, JSON.stringify(emptyDb, null, 2), "utf8");
     return emptyDb;
   }

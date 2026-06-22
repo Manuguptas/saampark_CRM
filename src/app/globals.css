@@ -40,6 +40,54 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ==========================================================================
+   NEW: Three-Bar Menu Toggle Button (Color-Neutral)
+   ========================================================================== */
+.menu-toggle {
+  display: none; /* Hidden by default on desktop */
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+}
+
+/* Inherits color from its parent container (e.g., topbar text color) */
+.menu-toggle span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor; 
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* CSS Transforms to morph the 3 bars into an 'X' */
+.menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* ==========================================================================
+   UPDATED: Sidebar Structure & Transitions
+   ========================================================================== */
+/* Assuming your sidebar element has a class like .sidebar-container */
+.sidebar-container {
+  width: var(--sidebar-width);
+  transition: transform 0.3s ease, width 0.3s ease;
+}
+
+/* Existing sidebar link classes preserved exactly */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -90,13 +138,37 @@ body {
   border-radius: 4px;
 }
 
+/* ==========================================================================
+   UPDATED: Responsive Rules for Toggle Behavior
+   ========================================================================== */
 @media (max-width: 960px) {
   :root {
-    --sidebar-width: 0px;
+    --sidebar-width: 188px; /* Keep the same width for mobile */
+  }
+
+  /* Reveal the hamburger menu button on mobile/tablet */
+  .menu-toggle {
+    display: flex;
+  }
+
+  /* Move sidebar offscreen using structural variables, matching your color themes */
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 188px; /* Force visibility width when active */
+    transform: translateX(-100%); /* Keeps it safely hidden offscreen */
+    z-index: 1000;
+  }
+
+  /* When body has .sidebar-open, slide the sidebar layout back into view */
+  body.sidebar-open .sidebar-container {
+    transform: translateX(0);
   }
 }
 
-/* ==========calender========= */
+/* ==========calendar========= */
 @keyframes fadeIn {
   from {
     opacity: 0;

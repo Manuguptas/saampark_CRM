@@ -23,30 +23,30 @@
   ],
   "dashboards": [
     {
-      "id": "dashboard_1776533857913_8862",
-      "label": "mmm",
-      "openTasks": 2,
-      "events": 3,
-      "due": "$15421",
-      "graphType": "donut",
+      "id": "dashboard_1776576052504_4037",
+      "label": "Saampark",
+      "openTasks": 5,
+      "events": 2,
+      "due": "50000",
+      "graphType": "area",
+      "ticketColor": "blue"
+    },
+    {
+      "id": "dashboard_1781407084518_7242",
+      "label": "Sutanu",
+      "openTasks": 5,
+      "events": 50,
+      "due": "₹60000",
+      "graphType": "bar",
       "ticketColor": "#18b588"
     },
     {
-      "id": "dashboard_1776576052504_4037",
-      "label": "Saampark",
-      "openTasks": 1,
-      "events": 2,
-      "due": "5000",
-      "graphType": "bar",
-      "ticketColor": "green"
-    },
-    {
-      "id": "dashboard_1777780847977_3033",
-      "label": "Saampark technology",
-      "openTasks": 0,
-      "events": 0,
-      "due": "₹0.00",
-      "graphType": "bar",
+      "id": "dashboard_1781535201537_6844",
+      "label": "manu",
+      "openTasks": 55,
+      "events": 55,
+      "due": "1000",
+      "graphType": "donut",
       "ticketColor": "#18b588"
     }
   ],
@@ -165,5 +165,83 @@
         "className": "bg-[#d89cf2] text-white"
       }
     }
-  ]
+  ],
+  "users": [
+    {
+      "id": "usr_1781090883815",
+      "email": "2020sutanuroy@gmail.com",
+      "password": "2020",
+      "username": "Sutanu Roy",
+      "role": "USER",
+      "companyName": "Farmer",
+      "clientType": "Organization"
+    }
+  ],
+  "products": [
+  {
+    "id": 1,
+    "title": "Logo Design",
+    "price": "100.00",
+    "unit": "PC",
+    "description": "Logo design for your brand.",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 2,
+    "title": "10GB Hosting",
+    "price": "100.00",
+    "unit": "PC",
+    "description": "Cloud Hosting service 10GB Space - Free su...",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 3,
+    "title": "Art pictures",
+    "price": "40.00",
+    "unit": "PC",
+    "description": "Hand art pictures for your website.",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 4,
+    "title": "Content writing",
+    "price": "15.00",
+    "unit": "Hour",
+    "description": "We write content for different types of webs...",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 5,
+    "title": "App Development",
+    "price": "150.00",
+    "unit": "Hour",
+    "description": "Custom mobile app development and design.",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 6,
+    "title": "Cyber Security Lock",
+    "price": "85.00",
+    "unit": "PC",
+    "description": "Full network audit and security hardening.",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 7,
+    "title": "SEO Optimization",
+    "price": "60.00",
+    "unit": "Hour",
+    "description": "Boost your search engine visibility rankings.",
+    "image": "/api/placeholder/400/250"
+  },
+  {
+    "id": 8,
+    "title": "Admin Dashboard Template",
+    "price": "49.00",
+    "unit": "PC",
+    "description": "Modern UI premium responsive panel mockup.",
+    "image": "/api/placeholder/400/250"
+  }
+]
+  
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ListChecks, CalendarDays, Compass, FileText, StickyNote, ChevronDown, Check, PlusCircle } from "lucide-react";
+import { ListChecks, CalendarDays, Compass, FileText, StickyNote, ChevronDown, Check, PlusCircle, TrendingUp, Users, MessageSquare } from "lucide-react";
 import ClockWidget from "@/components/dashboard/ClockWidget";
 import StatCard from "@/components/dashboard/StatCard";
 import ProjectsOverview from "@/components/dashboard/ProjectsOverview";
@@ -78,14 +78,23 @@ function StickyNoteWidget() {
   );
 }
 
-export default function DashboardPage() {
+export default function DashboardPage(){
   const [range, setRange] = useState<DashboardRange>("this_month");
   const [dashboards, setDashboards] = useState<DashboardConfig[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [openMenu, setOpenMenu] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [savingDashboard, setSavingDashboard] = useState(false);
-  const [form, setForm] = useState<NewDashboardForm>({
+  const [createForm, setCreateForm] = useState<NewDashboardForm>({
+    label: "",
+    openTasks: 0,
+    events: 0,
+    due: "₹0.00",
+    graphType: "donut",
+    ticketColor: "#18b588",
+  });
+  const [editForm, setEditForm] = useState<NewDashboardForm>({
     label: "",
     openTasks: 0,
     events: 0,
@@ -131,13 +140,25 @@ export default function DashboardPage() {
     return dashboards.find((item) => item.id === activeId) ?? dashboards[0];
   }, [dashboards, activeId]);
 
+  useEffect(() => {
+    if (!showEdit || !current || current.id === "temp") return;
+    setEditForm({
+      label: current.label,
+      openTasks: current.openTasks,
+      events: current.events,
+      due: current.due,
+      graphType: current.graphType,
+      ticketColor: current.ticketColor,
+    });
+  }, [showEdit, current]);
+
   async function createDashboard() {
-    if (!form.label.trim()) return;
+    if (!createForm.label.trim()) return;
     setSavingDashboard(true);
     const res = await fetch("/api/dashboards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(createForm),
     });
     setSavingDashboard(false);
     if (!res.ok) return;
@@ -145,7 +166,45 @@ export default function DashboardPage() {
     setDashboards((prev) => [...prev, created]);
     setActiveId(created.id);
     setShowCreate(false);
-    setForm({ label: "", openTasks: 0, events: 0, due: "₹0.00", graphType: "donut", ticketColor: "#18b588" });
+    setCreateForm({ label: "", openTasks: 0, events: 0, due: "₹0.00", graphType: "donut", ticketColor: "#18b588" });
+  }
+
+  async function saveDashboard() {
+    if (!current || current.id === "temp") return;
+    if (!editForm.label.trim()) return;
+
+    setSavingDashboard(true);
+    const res = await fetch(`/api/dashboards/${current.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editForm),
+    });
+    setSavingDashboard(false);
+    if (!res.ok) return;
+
+    const updated = (await res.json()) as DashboardConfig;
+    setDashboards((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+    setShowEdit(false);
+  }
+
+  async function deleteDashboard(id: string) {
+    setSavingDashboard(true);
+    const res = await fetch(`/api/dashboards/${id}`, { method: "DELETE" });
+    setSavingDashboard(false);
+    if (!res.ok) return;
+
+    setDashboards((prev) => {
+      const nextDashboards = prev.filter((item) => item.id !== id);
+      if (nextDashboards.length > 0) {
+        setActiveId(nextDashboards[0].id);
+      } else {
+        setActiveId("");
+      }
+      return nextDashboards;
+    });
+    setShowEdit(false);
+    setShowCreate(false);
+    setOpenMenu(false);
   }
 
   return (
@@ -157,7 +216,7 @@ export default function DashboardPage() {
             onClick={() => setOpenMenu((prev) => !prev)}
             className="inline-flex items-center gap-2 rounded border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-[#334457]"
           >
-            {current.label}
+            Dashboards
             <ChevronDown size={14} className={openMenu ? "rotate-180 transition-transform" : "transition-transform"} />
           </button>
           {openMenu ? (
@@ -176,45 +235,64 @@ export default function DashboardPage() {
                   {current.id === item.id ? <Check size={14} className="text-[#3f8cff]" /> : null}
                 </button>
               ))}
+              <div className="mt-2 border-t border-[var(--border)] pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreate(true);
+                    setShowEdit(false);
+                    setOpenMenu(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm text-[#334457] hover:bg-[#f4f7fb]"
+                >
+                  <span>Add dashboard</span>
+                  <PlusCircle size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEdit((prev) => !prev);
+                    setShowCreate(false);
+                    setOpenMenu(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm text-[#334457] hover:bg-[#f4f7fb]"
+                >
+                  <span>{showEdit ? "Cancel edit" : "Edit dashboard"}</span>
+                  <span>{showEdit ? "↶" : "✎"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void deleteDashboard(current.id)}
+                  disabled={current.id === "temp" || savingDashboard}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm text-[#e13f5a] hover:bg-[#fde8ec] disabled:text-[#a1a9b5] disabled:hover:bg-white"
+                >
+                  <span>Delete dashboard</span>
+                  <span>✕</span>
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {dashboards.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveId(item.id)}
-              className={`rounded px-3 py-1.5 text-sm ${
-                current.id === item.id ? "bg-[#334457] text-white" : "border border-[var(--border)] bg-white text-[#607183]"
-              }`}
-            >
-              {item.label.replace(" Dashboard", "")}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setShowCreate((prev) => !prev)}
-            className="inline-flex items-center gap-1 rounded border border-[var(--border)] bg-white px-3 py-1.5 text-sm text-[#607183]"
-          >
-            <PlusCircle size={14} /> Add dashboard
-          </button>
+        <div className="flex-1 text-center">
+          <h1 className="text-lg font-semibold text-[#334457]">{current.label}</h1>
         </div>
 
-        <div className="relative">
-          <select
-            value={range}
-            onChange={(e) => setRange(e.target.value as DashboardRange)}
-            className="appearance-none rounded border border-[var(--border)] bg-white py-2 pl-3 pr-8 text-sm text-[#607183]"
-          >
-            <option value="today">Today</option>
-            <option value="last_7_days">Last 7 Days</option>
-            <option value="last_30_days">Last 30 Days</option>
-            <option value="this_month">This Month</option>
-            <option value="this_year">This Year</option>
-          </select>
-          <ChevronDown size={14} className="pointer-events-none absolute right-2 top-2.5 text-[#8fa0b1]" />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <select
+              value={range}
+              onChange={(e) => setRange(e.target.value as DashboardRange)}
+              className="appearance-none rounded border border-[var(--border)] bg-white py-2 pl-3 pr-8 text-sm text-[#607183]"
+            >
+              <option value="today">Today</option>
+              <option value="last_7_days">Last 7 Days</option>
+              <option value="last_30_days">Last 30 Days</option>
+              <option value="this_month">This Month</option>
+              <option value="this_year">This Year</option>
+            </select>
+            <ChevronDown size={14} className="pointer-events-none absolute right-2 top-2.5 text-[#8fa0b1]" />
+          </div>
         </div>
       </div>
 
@@ -223,33 +301,33 @@ export default function DashboardPage() {
           <input
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
             placeholder="Dashboard name"
-            value={form.label}
-            onChange={(e) => setForm((prev) => ({ ...prev, label: e.target.value }))}
+            value={createForm.label}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, label: e.target.value }))}
           />
           <input
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
             placeholder="Open tasks"
             type="number"
-            value={form.openTasks}
-            onChange={(e) => setForm((prev) => ({ ...prev, openTasks: Number(e.target.value) }))}
+            value={createForm.openTasks}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, openTasks: Number(e.target.value) }))}
           />
           <input
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
             placeholder="Events"
             type="number"
-            value={form.events}
-            onChange={(e) => setForm((prev) => ({ ...prev, events: Number(e.target.value) }))}
+            value={createForm.events}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, events: Number(e.target.value) }))}
           />
           <input
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
-        placeholder="Due (e.g. ₹9,000.00)"
-            value={form.due}
-            onChange={(e) => setForm((prev) => ({ ...prev, due: e.target.value }))}
+            placeholder="Due (e.g. ₹9,000.00)"
+            value={createForm.due}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, due: e.target.value }))}
           />
           <select
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
-            value={form.graphType}
-            onChange={(e) => setForm((prev) => ({ ...prev, graphType: e.target.value as DashboardGraphType }))}
+            value={createForm.graphType}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, graphType: e.target.value as DashboardGraphType }))}
           >
             <option value="donut">Donut Graph</option>
             <option value="bar">Bar Graph</option>
@@ -258,8 +336,8 @@ export default function DashboardPage() {
           <input
             className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
             placeholder="Ticket color #18b588"
-            value={form.ticketColor}
-            onChange={(e) => setForm((prev) => ({ ...prev, ticketColor: e.target.value }))}
+            value={createForm.ticketColor}
+            onChange={(e) => setCreateForm((prev) => ({ ...prev, ticketColor: e.target.value }))}
           />
           <button
             type="button"
@@ -272,11 +350,72 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
+      {showEdit ? (
+        <div className="grid grid-cols-1 gap-2 rounded border border-[var(--border)] p-3 md:grid-cols-7">
+          <input
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            placeholder="Dashboard name"
+            value={editForm.label}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, label: e.target.value }))}
+          />
+          <input
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            placeholder="Open tasks"
+            type="number"
+            value={editForm.openTasks}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, openTasks: Number(e.target.value) }))}
+          />
+          <input
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            placeholder="Events"
+            type="number"
+            value={editForm.events}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, events: Number(e.target.value) }))}
+          />
+          <input
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            placeholder="Due (e.g. ₹9,000.00)"
+            value={editForm.due}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, due: e.target.value }))}
+          />
+          <select
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            value={editForm.graphType}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, graphType: e.target.value as DashboardGraphType }))}
+          >
+            <option value="donut">Donut Graph</option>
+            <option value="bar">Bar Graph</option>
+            <option value="area">Area Graph</option>
+          </select>
+          <input
+            className="rounded border border-[var(--border)] px-2 py-1.5 text-sm"
+            placeholder="Ticket color #18b588"
+            value={editForm.ticketColor}
+            onChange={(e) => setEditForm((prev) => ({ ...prev, ticketColor: e.target.value }))}
+          />
+          <button
+            type="button"
+            onClick={() => void saveDashboard()}
+            disabled={savingDashboard}
+            className="rounded bg-[#334457] px-3 py-1.5 text-sm text-white disabled:opacity-60"
+          >
+            {savingDashboard ? "Saving..." : "Save"}
+          </button>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
         <ClockWidget />
         <StatCard icon={ListChecks} value={current.openTasks} label="My open tasks" iconBgClass="bg-[#3f9df5]" />
         <StatCard icon={CalendarDays} value={current.events} label="Events today" iconBgClass="bg-[#646d81]" />
         <StatCard icon={Compass} value={current.due} label="Due" iconBgClass="bg-[#ef3d7a]" />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <StatCard icon={ListChecks} value={current.openTasks} label="My open tasks" iconBgClass="bg-[#3f9df5]" />
+        <StatCard icon={CalendarDays} value={current.events} label="Events today" iconBgClass="bg-[#646d81]" />
+        <StatCard icon={ TrendingUp} value={current.due} label="Due" iconBgClass="bg-[#ef3d7a]" />
+        <StatCard icon={Users} value={current.due} label="Due" iconBgClass="bg-[#464646]" />
+        <StatCard icon={MessageSquare} value={current.due} label="Due" iconBgClass="bg-[#3f9df5]" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

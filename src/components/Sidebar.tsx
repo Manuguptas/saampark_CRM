@@ -67,40 +67,18 @@ const navItems: NavItem[] = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isopen = true }: { isopen?: boolean }) {
   const pathname = usePathname();
 
   return (
     <aside
       style={{ width: "var(--sidebar-width)" }}
-      className="fixed left-0 top-0 z-[60] h-screen border-r border-[#223044] bg-[var(--bg-sidebar)]"
+      className={`fixed left-0 top-16 z-40 h-[calc(100vh-64px)] overflow-y-auto border-r border-[#223044] bg-[var(--bg-sidebar)] transition-transform duration-200 ease-in-out ${
+        isopen ? "translate-x-0" : "-translate-x-full"
+      }`}
     >
-      {/* ===== TOP LOGO SECTION ===== */}
-    <div className="flex h-[var(--topbar-height)] items-center border-b border-[#2a3648] bg-[var(--bg-sidebar-top)] px-4">
-  <div className="flex items-center gap-3">
-    
-    {/* Logo */}
-    <img
-      src="/sg1.png"
-      alt="Saampark Logo"
-      className="h-9 w-9 object-contain"
-    />
-
-    {/* Text */}
-    <div className="leading-tight">
-      <h1 className="text-lg font-bold text-[#00d0d2] tracking-wide">
-        SAAMPARK
-      </h1>
-      <p className="text-xs text-gray-400 tracking-wider">
-        GROUP
-      </p>
-    </div>
-
-  </div>
-</div>
-
       {/* ===== NAVIGATION ===== */}
-      <nav className="overflow-y-auto px-2 py-2">
+      <nav className="px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
 
@@ -130,7 +108,7 @@ export default function Sidebar() {
                 {hasChildren && (
                   <ChevronDown
                     size={12}
-                    className={`text-[#7f90a4] ${
+                    className={`text-[#7f90a4] transition-transform ${
                       expanded ? "rotate-180" : ""
                     }`}
                   />
@@ -146,10 +124,10 @@ export default function Sidebar() {
                       <Link
                         key={child.href}
                         href={child.href}
-                        className={`block py-1.5 text-sm ${
+                        className={`block py-1.5 text-sm transition-colors ${
                           childActive
                             ? "text-white"
-                            : "text-[#a5b3c3]"
+                            : "text-[#a5b3c3] hover:text-white"
                         }`}
                       >
                         {child.label}

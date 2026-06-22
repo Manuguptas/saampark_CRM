@@ -4,8 +4,8 @@ import type { DashboardConfig, DashboardGraphType } from "@/lib/types";
 
 const graphTypes: DashboardGraphType[] = ["donut", "bar", "area"];
 
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
+export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+  const { id } = ctx.params;
   const body = (await req.json()) as Partial<DashboardConfig>;
 
   const db = await readDb();
@@ -29,8 +29,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   return NextResponse.json(db.dashboards[index]);
 }
 
-export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
+export async function DELETE(_: Request, ctx: { params: { id: string } }) {
+  const { id } = ctx.params;
   const db = await readDb();
   const before = db.dashboards.length;
   db.dashboards = db.dashboards.filter((item) => item.id !== id);

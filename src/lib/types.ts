@@ -34,9 +34,17 @@ export type Project = {
   status: "Open" | "Completed";
   tag?: { label: string; className: string };
 };
+export type User = {
+  id: string;
+  email: string;
+  password: string; // Plain text for local testing, can be hashed later
+  username: string;
+  role: "ADMIN" | "USER";
+};
 
 export type AppDb = {
   leads: Lead[];
   dashboards: DashboardConfig[];
   projects: Project[];
+  users: User[];
 };
